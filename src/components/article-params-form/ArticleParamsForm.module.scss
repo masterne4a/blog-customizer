@@ -20,7 +20,7 @@
 	width: 616px;
 	height: auto;
 	min-height: 100%;
-	padding: 50px 31px;
+	padding: 50px 30px;
 	background-color: #ffffff;
 	border-right: 1px solid #000000;
 }
@@ -28,5 +28,16 @@
 .bottomContainer {
 	display: flex;
 	justify-content: space-between;
-	margin-top: auto;
+	margin-top: 157px;
+}
+
+.h1 {
+	padding: 5.5px 0;
+	font-weight: 800;
+	font-size: 31px;
+	font-family: 'Open Sans', sans-serif;
+	line-height: 1;
+	letter-spacing: 0;
+	text-align: left;
+	text-transform: uppercase;
 }
