@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 import { Select } from 'src/ui/select';
@@ -31,7 +31,7 @@ type ArticleParamsFormProps = {
 };
 
 export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [font, setFont] = useState<OptionType>(
 		defaultArticleState.fontFamilyOption
 	);
@@ -50,7 +50,7 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 	const refContainer = useRef<HTMLElement>(null);
 
 	const handleClick = () => {
-		setIsOpen(!isOpen);
+		setIsMenuOpen(!isMenuOpen);
 	};
 
 	const resetForm = (e?: ReactMouseEvent<HTMLButtonElement>) => {
@@ -70,11 +70,11 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 		setContentWidth(defaultArticleState.contentWidth);
 
 		onApply(defaultFormData);
-		setIsOpen(false);
+		setIsMenuOpen(false);
 	};
 
-	const handleApply = (e?: ReactMouseEvent<HTMLButtonElement>) => {
-		e?.preventDefault();
+	const handleApply = (event?: FormEvent<HTMLFormElement>) => {
+		event?.preventDefault();
 
 		const formData = {
 			font: font.value,
@@ -85,16 +85,16 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 		};
 
 		onApply(formData);
-		setIsOpen(false);
+		setIsMenuOpen(false);
 	};
 
 	useEffect(() => {
-		if (isOpen == true) {
+		if (isMenuOpen == true) {
 			refContainer.current?.classList.add(styles.container_open);
 		} else {
 			refContainer.current?.classList.remove(styles.container_open);
 		}
-	}, [isOpen]);
+	}, [isMenuOpen]);
 
 	useEffect(() => {
 		const handleClickOutside = (e: globalThis.MouseEvent) => {
@@ -104,28 +104,51 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 			if (target.closest('[data-ignore-outside]')) return;
 
 			if (
-				isOpen &&
+				isMenuOpen &&
 				refContainer.current &&
 				!refContainer.current.contains(target as Node)
 			) {
-				setIsOpen(false);
+				setIsMenuOpen(false);
 			}
 		};
 
-		if (isOpen) {
+		if (isMenuOpen) {
 			document.addEventListener('mousedown', handleClickOutside);
 		}
 
 		return () => {
 			document.removeEventListener('mousedown', handleClickOutside);
 		};
-	}, [isOpen]);
+	}, [isMenuOpen]);
+
+	useEffect(() => {
+		const handleEnter = (e: KeyboardEvent) => {
+			if (e.key === 'Enter' && isMenuOpen) {
+				e.preventDefault();
+
+				setTimeout(() => {
+					handleApply();
+				}, 0);
+			}
+		};
+
+		if (isMenuOpen) {
+			document.addEventListener('keydown', handleEnter);
+		}
+
+		return () => {
+			document.removeEventListener('keydown', handleEnter);
+		};
+	}, [isMenuOpen]);
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={handleClick} />
+			<ArrowButton isOpen={isMenuOpen} onClick={handleClick} />
 			<aside className={styles.container} ref={refContainer}>
-				<form className={styles.form} style={{ gap: 50 }}>
+				<form
+					onSubmit={handleApply}
+					className={styles.form}
+					style={{ gap: 50 }}>
 					<h1 className={styles.h1}>Задайте параметры</h1>
 					<Select
 						title={'шрифт'}
@@ -172,7 +195,7 @@ export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 							type='clear'
 						/>
 						<Button
-							onClick={handleApply}
+							/*onClick={handleApply}*/
 							title='Применить'
 							htmlType='submit'
 							type='apply'
